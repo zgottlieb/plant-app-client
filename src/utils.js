@@ -5,11 +5,3 @@ export const getToken = async () => {
   const json = await response.json();
   return json.token;
 };
-
-export const getPlantsData = async () => {
-  const token = await getToken();
-  const plantResponse = await fetch(
-    `https://trefle.io/api/v1/plants?token=${token}`
-  );
-  return plantResponse.json();
-};

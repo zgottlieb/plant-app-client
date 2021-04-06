@@ -1,42 +1,45 @@
 import React, { useEffect, useState } from "react";
-import { Box, Flex, Image, Text } from "rebass";
 import "./App.css";
-import { getToken } from "./api";
+import { getToken } from "./utils";
+import { SearchForm } from "./components/SearchForm";
+import { SearchResults } from "./components/SearchResults";
 
 function App() {
   const [plantsData, setPlantsData] = useState();
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const getPlantsData = async () => {
+      setLoading(true);
       const token = await getToken();
       const plantResponse = await fetch(
-        `https://trefle.io/api/v1/plants?token=${token}`
+        `https://trefle.io/api/v1/plants/search?q=${query}&token=${token}`
       );
-      const data = await plantResponse.json();
-      setPlantsData(data);
+      const plantResponseJson = await plantResponse.json();
+      console.log(plantResponseJson);
+      setPlantsData(plantResponseJson.data);
+      setLoading(false);
     };
 
-    getPlantsData();
-  }, []);
-  console.log(plantsData);
+    if (query) {
+      getPlantsData();
+    }
+  }, [query]);
 
-  if (!plantsData) return <div>Loading...</div>;
+  if (loading) return <div style={{ padding: "20px" }}>Loading...</div>;
+
   return (
-    <div className="App">
-      {plantsData.data.map((plant) => (
-        <Flex key={plant.id}>
-          <Box>
-            <Image
-              alt={`${plant.common_name}`}
-              src={plant.image_url}
-              width="50px"
-              height="50px"
-            />
-          </Box>
-          <Box>
-            <Text>{plant.common_name}</Text>
-          </Box>
-        </Flex>
-      ))}
+    <div className="App" style={{ padding: "20px" }}>
+      <h1>☘️ Plant Looker Upper ☘️</h1>
+      <SearchForm onSubmit={setQuery} />
+      {!query && (
+        <div style={{ marginTop: "20px" }}>
+          No search terms provided. Enter a plant name above to retrieve some
+          plant data!
+        </div>
+      )}
+      {plantsData && <SearchResults data={plantsData} query={query} />}
     </div>
   );
 }
